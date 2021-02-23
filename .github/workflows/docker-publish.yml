@@ -1,0 +1,34 @@
+name: Docker
+
+on:
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        
+      - name: Login to Github Container registry
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repositroy_owner }}
+          password: ${{ secrets.TOKEN }}
+          
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          push: true
+          tags: ghrc.io/${{github.repositroy_owner}}/test:latest
+          secret: | 
+            GIT_AUTH_TOKEN = ${{env.PAT}}
+          
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
